@@ -1,1 +1,6 @@
 transition_matrix.pkl
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+__init__.py
