@@ -39,30 +39,34 @@ def print_matrix(matrix, name):
     table = [[f"a{idx+1}"] + [str(elem) for elem in row] for idx, row in enumerate(matrix)]
     print(tabulate(table, headers=headers, tablefmt="fancy_grid"))
 
-
-
 def get_transition_matrix():
     """
     Запрашивает у пользователя ввод матрицы переходов 3x3 с элементами в виде дробей или целых чисел.
+    После ввода каждой строки сразу проверяет, что сумма элементов равна 1.
+    Если проверка не пройдена, предлагает пользователю исправить ввод.
     Возвращает матрицу в виде списка списков объектов Fraction.
     """
-    print("\n=== Ввод матрицы переходов 3x3 ===\n")  # Добавлен заголовок и отступы
-    print("Используйте дроби в формате 'числитель/знаменатель' или целые числа.\n")
+    print("\n=== Ввод матрицы переходов 3x3 ===\n")  # Заголовок и отступы
+    print("Введите каждую строку матрицы по 3 элемента, разделенных пробелом (например, '1/3 0 2/3').\n")
     matrix = []
     states = ['a1', 'a2', 'a3']
     for i in range(3):
         while True:
             try:
-                row_input = input(f"Введите строку {i+1} (например, '1/3 0 2/3'): ").strip().split()
+                row_input = input(f"Введите строку {i+1}: ").strip().split()
                 if len(row_input) != 3:
                     raise ValueError("Необходимо ввести ровно 3 элемента.")
-                row = [Fraction(x) for x in row_input]
+                row = [Fraction(elem) for elem in row_input]
+                row_sum = sum(row)
+                if row_sum != Fraction(1):
+                    print(f"Сумма элементов строки {i+1} равна {row_sum}, должна быть 1. Пожалуйста, введите строку заново.\n")
+                    continue
                 matrix.append(row)
                 break
             except ValueError as ve:
-                print(f"Ошибка ввода: {ve}. Попробуйте снова.\n")  # Добавлен перенос строки
+                print(f"Ошибка ввода: {ve}. Попробуйте снова.\n")
             except ZeroDivisionError:
-                print("Ошибка ввода: знаменатель не может быть нулем. Попробуйте снова.\n")  # Добавлен перенос строки
+                print("Ошибка ввода: знаменатель не может быть нулем. Попробуйте снова.\n")
     return matrix
 
 def validate_matrix(matrix):
@@ -226,3 +230,9 @@ def matrix_to_float(matrix):
     Преобразование матрицы из объектов Fraction в числа с плавающей точкой.
     """
     return [[float(entry) for entry in row] for row in matrix]
+
+# Пример использования функции
+if __name__ == "__main__":
+    P = get_transition_matrix()
+    print_matrix(P, "Переходная матрица")
+    # Дополнительные действия, например, проверка или построение диаграмм

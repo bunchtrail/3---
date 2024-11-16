@@ -18,7 +18,7 @@ def main():
 
     # Шаг 1: Ввод матрицы переходов
     matrix = get_transition_matrix()
-
+    
     # Шаг 2: Проверка корректности матрицы
     if not validate_matrix(matrix):
         print("Программа завершена из-за некорректной матрицы переходов.\n")
@@ -60,7 +60,7 @@ def main():
     for row in P3:
         print([f"{elem}" for elem in row])
 
-    # Вывод вероятностей через три шага для каждого начального состояния
+    # Вывод вероятностей через три шага для каждого начального состоя��ия
     print(f"\n=== Вероятности через {steps} шага(ов) для каждого начального состояния ===")
     for start_state in states:
         idx = states.index(start_state)

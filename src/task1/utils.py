@@ -1,6 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 from fractions import Fraction
+from tabulate import tabulate
 
 
 def get_transition_matrix():
@@ -14,6 +15,8 @@ def get_transition_matrix():
                 if len(row) != 3:
                     raise ValueError("Необходимо ввести ровно 3 элемента.")
                 row = [Fraction(x) for x in row]
+                if sum(row) != Fraction(1, 1):
+                    raise ValueError("Сумма элементов строки должна быть равна 1.")
                 matrix.append(row)
                 break
             except ValueError as ve:
@@ -35,11 +38,9 @@ def validate_matrix(matrix):
 
 def print_transition_matrix(matrix, states):
     print("\nМатрица переходов:")
-    header = "      " + "    ".join(states)
-    print(header)
-    for state, row in zip(states, matrix):
-        row_str = "  ".join(f"{prob}" for prob in row)
-        print(f"{state}  {row_str}")
+    table = [ [state] + [str(prob) for prob in row] for state, row in zip(states, matrix) ]
+    headers = [""] + states
+    print(tabulate(table, headers=headers, tablefmt="fancy_grid"))
 
 def build_and_draw_graph(matrix, states):
     print("\nПостроение диаграммы состояний...")
@@ -78,5 +79,7 @@ def build_and_draw_graph(matrix, states):
 
 def print_dot_product(state, matrix, current_state_index):
     print(f"\nИз состояния {state}:")
+    table = [["Следующее состояние", "Вероятность"]]
     for i, prob in enumerate(matrix[current_state_index]):
-        print(f"  Вероятность перейти в {states[i]}: {prob}")
+        table.append([states[i], str(prob)])
+    print(tabulate(table[1:], headers=table[0], tablefmt="fancy_grid"))

@@ -3,7 +3,7 @@ import pickle  # Добавлено для загрузки матрицы
 from utils import multiply_matrices, check_row_sums, print_matrix
 
 def main():
-    # Загружаем матрицу переходов из файла
+    # За��ружаем матрицу переходов из файла
     with open('transition_matrix.pkl', 'rb') as f:
         P = pickle.load(f)
     print("Матрица переходов загружена из файла 'transition_matrix.pkl'.")
