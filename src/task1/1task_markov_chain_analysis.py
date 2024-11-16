@@ -83,7 +83,7 @@ def print_dot_product(state, matrix, current_state_index):
 def main():
     print("Программа для анализа цепи Маркова с матрицей переходов 3x3.")
 
-    # Шаг 1: Ввод матрицы переходов
+    # Шаг 1: Ввод матрицы переход��в
     matrix = get_transition_matrix()
     states = ['a1', 'a2', 'a3']
 
