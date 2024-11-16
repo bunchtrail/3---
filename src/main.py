@@ -1,31 +1,31 @@
-import argparse
 import subprocess
-import os
+
+def run_task(task_number):
+    if task_number == 1:
+        subprocess.run(["python", "src/task1/1task.py"])
+    elif task_number == 2:
+        subprocess.run(["python", "src/task2/2task.py"])
+    elif task_number == 3:
+        subprocess.run(["python", "src/task3/3task.py"])
+    else:
+        print(f"Задача {task_number} не найдена.")
 
 def main():
-    parser = argparse.ArgumentParser(description="Основная программа для запуска задач проекта.")
-    parser.add_argument('task', choices=['1', '2', '3'], help="Задача для запуска: 1, 2, 3", nargs='?')
-    args = parser.parse_args()
-
-    task_scripts = {
-        '1': 'task1/markov_chain_analysis.py',
-        '2': 'task2/transition_analysis.py',
-        '3': 'task3/genetic_algorithm.py'
-    }
-
-    if not args.task:
-        print("Выберите задачу для запуска:")
-        for key, script in task_scripts.items():
-            print(f"{key}: {script}")
-        selected_task = input("Введите номер задачи (1, 2 или 3): ").strip()
-    else:
-        selected_task = args.task
-
-    if selected_task in task_scripts:
-        script_path = os.path.join(os.path.dirname(__file__), task_scripts[selected_task])
-        subprocess.run(["python", script_path])
-    else:
-        print("Пожалуйста, введите номер задачи для запуска: 1, 2 или 3.")
+    while True:
+        print("\nВыберите задачу для запуска:")
+        print("1. Задача 1")
+        print("2. Задача 2")
+        print("3. Задача 3")
+        print("0. Выход")
+        
+        try:
+            task_number = int(input("Введите номер задачи: "))
+            if task_number == 0:
+                print("Выход из программы.")
+                break
+            run_task(task_number)
+        except ValueError:
+            print("Некорректный ввод. Пожалуйста, введите номер задачи.")
 
 if __name__ == "__main__":
     main()
