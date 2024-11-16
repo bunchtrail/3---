@@ -197,7 +197,7 @@ def test_genetic_algorithm():
 
 def genetic_algorithm():
     func = input_function()
-    print("Введите диапазон значений x:")
+    print("\nВведите диапазон значений x:")
     x_min = int(input("Минимальное значение x (например, 1): "))
     x_max = int(input("Максимальное значение x (например, 29): "))
     
@@ -207,7 +207,10 @@ def genetic_algorithm():
     elitism_input = input("Использовать элитизм? (да/нет): ").strip().lower()
     use_elitism = elitism_input == 'да'
     
+    # Генерация начальной популяции
     population = generate_population(population_size, x_min, x_max)
+    print(f"\nНачальная популяция: {population}")
+    
     for gen in range(1, generations + 1):
         fitness_values = [fitness(ind, func) for ind in population]
         print(f"\nПоколение {gen}:")
@@ -220,15 +223,17 @@ def genetic_algorithm():
         if use_elitism:
             elite, others = select_elite(population, func)
             parent_pool = others
+            print(f"\nЭлитный индивидуум: {elite} с фитнесом {fitness(elite, func)}")
         else:
             elite = None
             parent_pool = population[:]
         
-        # Убедитесь, что родительская популяция достаточно велика для выборки
+        # Проверка достаточности родителей для кроссовера
         if len(parent_pool) < 2:
             print("Недостаточно индивидуумов для кроссовера.")
             break
         
+        # Выбор родителей случайным образом
         parent1, parent2 = random.sample(parent_pool, 2)
         offspring1, offspring2, point = crossover(parent1, parent2)
         
@@ -244,7 +249,7 @@ def genetic_algorithm():
         else:
             print("Кроссовер не изменил потомков, они идентичны родителям.")
         
-        # Мутация происходит один раз для всей популяции
+        # Мутация происходит для каждого потомка
         mutated_offspring = []
         for offspring in [offspring1, offspring2]:
             mutated, index = mutate(offspring)
@@ -253,24 +258,27 @@ def genetic_algorithm():
         
         # Фильтрация потомков по диапазону x
         valid_offspring = [ind for ind in mutated_offspring if x_min <= binary_to_int(ind) <= x_max]
+        print(f"Валидные потомки после фильтрации: {valid_offspring}")
         
+        # Обновление популяции
         if use_elitism and elite:
             population = [elite] + valid_offspring
-            # Заполнение оставшихся мест случайными индивидами из остальных
-            while len(population) < population_size:
-                new_individual = ''.join(random.choice(['0', '1']) for _ in range(5))
-                x = binary_to_int(new_individual)
-                if x_min <= x <= x_max:
-                    population.append(new_individual)
+            print(f"Популяция после элитизма и добавления потомков: {population}")
         else:
             population = valid_offspring
-            # Заполнение оставшихся мест случайными индивидуумами
-            while len(population) < population_size:
-                new_individual = ''.join(random.choice(['0', '1']) for _ in range(5))
-                x = binary_to_int(new_individual)
-                if x_min <= x <= x_max:
-                    population.append(new_individual)
+            print(f"Популяция после добавления потомков: {population}")
+        
+        # Заполнение популяции, если недостаточно индивидуумов
+        while len(population) < population_size:
+            new_individual = ''.join(random.choice(['0', '1']) for _ in range(5))
+            x = binary_to_int(new_individual)
+            if x_min <= x <= x_max and new_individual not in population:
+                population.append(new_individual)
+                print(f"Добавлен новый индивидуум: {new_individual}")
+        
+        print(f"Новая популяция: {population}")
     
+    # Итоговый результат
     best_individual = max(population, key=lambda ind: fitness(ind, func))
     best_fitness = fitness(best_individual, func)
     best_x = binary_to_int(best_individual)
