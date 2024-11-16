@@ -7,6 +7,8 @@ def run_task(task_number):
         subprocess.run(["python", "src/task2/2task.py"])
     elif task_number == 3:
         subprocess.run(["python", "src/task3/3task.py"])
+    elif task_number == 4:
+        subprocess.run(["python", "src/4task/4task.py"])
     else:
         print(f"Задача {task_number} не найдена.")
 
@@ -16,6 +18,7 @@ def main():
         print("1. Задача 1")
         print("2. Задача 2")
         print("3. Задача 3")
+        print("4. Задача 4")
         print("0. Выход")
         
         try:

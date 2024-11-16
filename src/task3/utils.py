@@ -51,11 +51,11 @@ def get_generation_count():
 
 def get_elitism_choice():
     while True:
-        choice = input("Использовать элитизм? (да/нет): ").lower()
-        if choice in ['да', 'нет']:
-            return choice == 'да'
+        choice = input("Использовать элитизм? (+/-): ").lower()
+        if choice in ['+', '-']:
+            return choice == '+'
         else:
-            print("Некорректный ввод. Пожалуйста, введите 'да' или 'нет'.")
+            print("Некорректный ввод. Пожалуйста, введите '+' или '-'.")
 
 def initialize_population(size, bit_length):
     population = [''.join(random.choice('01') for _ in range(bit_length)) for _ in range(size)]
