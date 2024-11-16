@@ -2,9 +2,17 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from fractions import Fraction
 from itertools import count
+import pickle  # Добавлено для сохранения матрицы
+from tabulate import tabulate  # Добавлено для красивого вывода таблиц
+import subprocess  # Добавлено для запуска 2.1task.py
 
 def get_transition_matrix():
-    print("Введите матрицу переходов 3x3. Ввод осуществляется построчно, разделяя элементы пробелами.")
+    """
+    Запрашивает у пользователя ввод матрицы переходов 3x3 с элементами в виде дробей или целых чисел.
+    Возвращает матрицу в виде списка списков объектов Fraction.
+    """
+    print("\n=== Ввод матрицы переходов 3x3 ===\n")  # Добавлен заголовок и отступы
+    print("Используйте дроби в формате 'числитель/знаменатель' или целые числа.\n")
     matrix = []
     states = ['a1', 'a2', 'a3']
     for i in range(3):
@@ -17,29 +25,37 @@ def get_transition_matrix():
                 matrix.append(row)
                 break
             except ValueError as ve:
-                print(f"Ошибка ввода: {ve}. Попробуйте снова.")
+                print(f"Ошибка ввода: {ve}. Попробуйте снова.\n")  # Добавлен перенос строки
             except ZeroDivisionError:
-                print("Ошибка ввода: знаменатель не может быть нулем. Попробуйте снова.")
+                print("Ошибка ввода: знаменатель не может быть нулем. Попробуйте снова.\n")  # Добавлен перенос строки
     return matrix
 
 def validate_matrix(matrix):
-    print("\nПроверка суммы элементов каждой строки матрицы переходов...")
+    """
+    Проверяет, что сумма элементов каждой строки матрицы равна 1.
+    Возвращает True, если матрица корректна, иначе False.
+    """
+    print("\n=== Проверка суммы элементов каждой строки матрицы переходов ===\n")
+    valid = True
     for idx, row in enumerate(matrix):
         row_sum = sum(row)
         print(f"Сумма элементов строки {idx+1}: {row_sum}")
         if row_sum != Fraction(1,1):
-            print(f"Ошибка: Сумма элементов строки {idx+1} не равна 1.")
-            return False
-    print("Все строки корректны. Сумма элементов каждой строки равна единице.")
-    return True
+            print(f"Ошибка: Сумма элементов строки {idx+1} не равна 1.\n")
+            valid = False
+    if valid:
+        print("Все строки корректны. Сумма элементов каждой строки равна единице.\n")
+    return valid
 
-def print_matrix(matrix, states):
-    print("\nМатрица:")
-    header = "      " + "    ".join(states)
-    print(header)
-    for state, row in zip(states, matrix):
-        row_str = "  ".join(f"{elem}" for elem in row)
-        print(f"{state}  {row_str}")
+def print_matrix(matrix, states, title="Матрица"):
+    """
+    Выводит матрицу с использованием библиотеки tabulate.
+    """
+    print(f"\n--- {title} ---\n")  # Добавлены разделители
+    headers = [""] + states
+    table = [[state] + [str(elem) for elem in row] for state, row in zip(states, matrix)]
+    print(tabulate(table, headers=headers, tablefmt="fancy_grid"))
+    print()  # Добавлен перенос строки после таблицы
 
 def plot_state_diagram(P_float, states):
     """
@@ -62,12 +78,14 @@ def plot_state_diagram(P_float, states):
     plt.title("Диаграмма состояний Марковской цепи")
     plt.show()
 
-def multiply_matrices(A, B):
+def multiply_matrices(A, B, power):
     """
-    Умножение двух матриц A и B, содержащих объекты Fraction, с пояснениями.
+    Умножение двух матриц A и B, соде��жащих объекты Fraction, с пояснениями.
     """
+    print(f"\n{'='*50}\nВычисление P^{power} = P^{power-1} x P\n{'='*50}\n")  # Добавлены разделители и пояснения
     size = len(A)
     result = [[Fraction(0) for _ in range(size)] for _ in range(size)]
+    print(f"\nВычисление P^{power}:")
     for i in range(size):
         for j in range(size):
             terms = []
@@ -76,30 +94,15 @@ def multiply_matrices(A, B):
                 terms.append(f"{A[i][k]}*{B[k][j]}")
                 result[i][j] += term
             expression = " + ".join(terms)
-            print(f"Элемент P[{i+1}][{j+1}] = {expression} = {result[i][j]}")
+            print(f"P^{power}[{i+1}][{j+1}] = {expression} = {result[i][j]}")
     return result
-
-def display_matrix_calculation(P_current, P, power):
-    """
-    Отображение пошаговых вычислений для матрицы P^power.
-    """
-    print(f"\nВычисление P^{power}:")
-    P_next = [[Fraction(0) for _ in range(len(P[0]))] for _ in range(len(P))]
-    for i in range(len(P_current)):
-        for j in range(len(P_current[0])):
-            terms = []
-            for k in range(len(P)):
-                term = f"{P_current[i][k]} * {P[k][j]}"
-                terms.append(term)
-                P_next[i][j] += P_current[i][k] * P[k][j]
-            expression = " + ".join(terms)
-            print(f"P^{power}[{i+1}][{j+1}] = {expression} = {P_next[i][j]}")
-    return P_next
 
 def build_transition_tree(P, states, steps, start_state):
     """
     Построение всех возможных путей переходов за заданное количество шагов.
+    Возвращает список путей и их вероятностей.
     """
+    print(f"\n{'-'*50}\nПостроение дерева переходов для состояния {start_state} на {steps} шаг(ов)\n{'-'*50}\n")  # Добавлены разделители
     paths = [ ([start_state], Fraction(1,1)) ]
     for step in range(steps):
         new_paths = []
@@ -116,8 +119,9 @@ def build_transition_tree(P, states, steps, start_state):
 def display_transition_tree(paths, steps, start_state, states):
     """
     Отображение дерева переходов и построение графа для визуализации.
+    Возвращает вероятности нахождения в каждом состоянии после заданных шагов.
     """
-    print(f"\nДерево переходов за {steps} шага(ов), начиная из состояния {start_state}:")
+    print(f"\nДерево переходов за {steps} шага(ов), начиная из состояния {start_state}:\n")
     final_probs = {state:Fraction(0,1) for state in states}
     for path, prob in paths:
         path_str = " -> ".join(path)
@@ -128,6 +132,7 @@ def display_transition_tree(paths, steps, start_state, states):
     print(f"\nВероятности нахождения в состояниях через {steps} шага(ов) из состояния {start_state}:")
     for state in states:
         print(f"P_{{{start_state}}}{state}^{steps} = {final_probs[state]}")
+    print()  # Добавлен перенос строки
 
     # Построение графа дерева переходов
     G = nx.DiGraph()
@@ -178,10 +183,18 @@ def verify_row_sums(matrix, name):
     """
     Проверка, что сумма элементов каждой строки матрицы равна единице.
     """
-    print(f"\nПроверка суммы элементов строк для {name}:")
+    print(f"\n=== Проверка суммы элементов строк для {name} ===\n")
+    valid = True
     for idx, row in enumerate(matrix):
         row_sum = sum(row)
-        print(f"Сумма строки {idx+1}: {row_sum} {'(Верно)' if row_sum == Fraction(1,1) else '(Ошибка)'}")
+        status = "(Верно)" if row_sum == Fraction(1,1) else "(Ошибка)"
+        print(f"Сумма строки {idx+1}: {row_sum} {status}")
+        if row_sum != Fraction(1,1):
+            valid = False
+    if valid:
+        print(f"\nВсе строки матрицы {name} корректны. Сумма элементов каждой строки равна единице.\n")
+    else:
+        print(f"\nНекоторые строки матрицы {name} имеют суммы, отличные от единицы.\n")
 
 def matrix_to_float(matrix):
     """
@@ -190,64 +203,74 @@ def matrix_to_float(matrix):
     return [[float(entry) for entry in row] for row in matrix]
 
 def main():
-    print("Программа для анализа цепи Маркова с матрицей переходов 3x3.")
+    print("\n=== Программа для анализа цепи Маркова с матрицей переходов 3x3 ===\n")
+    states = ['a1', 'a2', 'a3']
 
     # Шаг 1: Ввод матрицы переходов
     matrix = get_transition_matrix()
-    states = ['a1', 'a2', 'a3']
 
     # Шаг 2: Проверка корректности матрицы
     if not validate_matrix(matrix):
+        print("Программа завершена из-за некорректной матрицы переходов.\n")
         return
 
     # Шаг 3: Построение и вывод диаграммы состояний
+    print_matrix(matrix, states, "Исходная матрица переходов P")
     P_float = matrix_to_float(matrix)
     plot_state_diagram(P_float, states)
 
-    # Шаг 4: Вывод начальной матрицы
-    print_matrix(matrix, states)
-
-    # Шаг 5: Проверка суммы элементов строк начальной матрицы
+    # Шаг 4: Проверка суммы элементов строк начальной матрицы
     verify_row_sums(matrix, "P")
 
-    # Шаг 6: Пояснение
-    print("\nВ данной матрице сумма элементов каждой строки равна единице, что соответствует требованиям цепей Маркова.")
+    # Шаг 5: Пояснение
+    print("В данной матрице сумма элементов каждой строки равна единице, что соответствует требованиям цепей Маркова.\n")
 
-    # Шаг 7: Вычисление P^2 = P x P
-    print("\nВычисление P^2 = P x P:")
-    P2 = multiply_matrices(matrix, matrix)
-    print_matrix(P2, states)
+    # Шаг 6: Вычисление P^2 = P x P с отображением шагов
+    P2 = multiply_matrices(matrix, matrix, 2)
+    print_matrix(P2, states, "Матрица P^2")
     verify_row_sums(P2, "P^2")
 
-    # Шаг 8: Вычисление P^3 = P^2 x P
-    print("\nВычисление P^3 = P^2 x P:")
-    P3 = multiply_matrices(P2, matrix)
-    print_matrix(P3, states)
+    # Шаг 7: Вычисление P^3 = P^2 x P с отображением шагов
+    P3 = multiply_matrices(P2, matrix, 3)
+    print_matrix(P3, states, "Матрица P^3")
     verify_row_sums(P3, "P^3")
 
-    # Шаг 9: Построение дерева переходов для трёх шагов из каждого состояния
+    # Шаг 8: Построение дерева переходов для трех шагов из каждого состояния
     steps = 3
     for start_state in states:
         paths = build_transition_tree(matrix, states, steps, start_state)
         final_probs = display_transition_tree(paths, steps, start_state, states)
 
-    # Шаг 10: Вывод итоговых матриц и результатов
-    print("\nИтоговые матрицы:")
+    # Шаг 9: Вывод итоговых матриц и результатов
+    print("\n=== Итоговые матрицы ===\n")
     print("P^2:")
     for row in P2:
         print([f"{elem}" for elem in row])
-
     print("\nP^3:")
     for row in P3:
         print([f"{elem}" for elem in row])
 
     # Вывод вероятностей через три шага для каждого начального состояния
-    print(f"\nВероятности через {steps} шага(ов) для каждого начального состояния:")
+    print(f"\n=== Вероятности через {steps} шага(ов) для каждого начального состояния ===")
     for start_state in states:
         idx = states.index(start_state)
         print(f"\nДля начального состояния {start_state}:")
         for j, state in enumerate(states):
-            print(f"P_{{{start_state}}}{state}^{steps} = {P3[idx][j]}")
+            prob = P3[idx][j]
+            print(f"P_{{{start_state}}}{state}^{steps} = {prob}")
+
+    # Сохранение матрицы переходов в файл
+    with open('transition_matrix.pkl', 'wb') as f:
+        pickle.dump(matrix, f)
+    print("\nМатрица переходов сохранена в файл 'transition_matrix.pkl'.\n")
+
+    # Предложение запустить 2.1task.py
+    choice = input("Введите '+' чтобы запустить последующий анализ (2.1task.py), или любую другую клавишу для выхода: ")
+    if choice.strip() == '+':
+        print("\nЗапуск анализа 2.1task.py...\n")
+        subprocess.run(["python", "2.1task.py"])
+    else:
+        print("\nРабота программы завершена.\n")
 
 if __name__ == "__main__":
     main()
