@@ -76,7 +76,7 @@ def evaluate_population(population, fitness_func, x_min, x_max, bit_length):
         table.append([idx + 1, genotype, x, fitness])
     headers = ["№", "Генотип", "Фенотип (x)", "Значение функции"]
     print(f"\nПоколение:")
-    print(tabulate(table, headers=headers, tablefmt="grid"))
+    print(tabulate(table, headers=headers, tablefmt="pretty", numalign="center", stralign="center"))
     return table
 
 def select_parents(population, fitness_values):
@@ -146,7 +146,7 @@ def genetic_algorithm():
             crossover_table.append([marked_parent2, child2, f2])
 
         headers = ["Родитель", "Потомок", "Значение функции"]
-        print(tabulate(crossover_table, headers=headers, tablefmt="grid"))
+        print(tabulate(crossover_table, headers=headers, tablefmt="pretty", numalign="center", stralign="center"))
 
         # Этап 4: Элитизм и отбор особей
         combined_population = population + offspring
@@ -169,7 +169,7 @@ def genetic_algorithm():
 
         headers = ["Индивид", "Значение функции", "Статус"]
         print("\nИтоговая таблица родителей и значений:")
-        print(tabulate(final_table, headers=headers, tablefmt="grid"))
+        print(tabulate(final_table, headers=headers, tablefmt="pretty", numalign="center", stralign="center"))
 
     # Этап 5: Финальное поколение и результат
     best_individual = max(population, key=lambda indiv: fitness_func(genotype_to_phenotype(indiv, x_min, x_max, bit_length)))
